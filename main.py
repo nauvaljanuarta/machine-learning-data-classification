@@ -68,7 +68,10 @@ plot_tree(
     feature_names=X.columns,
     class_names=le.classes_,
     filled=True,
-    rounded=True
+    rounded=True,
+    proportion=True,       
+    impurity=False,        
+    label='root',         
 )
 plt.title("decision tree pada data bunga iris IRIS.csv")
 plt.show()
