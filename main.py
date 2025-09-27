@@ -7,6 +7,7 @@ from sklearn.metrics import accuracy_score, classification_report
 from imblearn.over_sampling import SMOTE
 import matplotlib.pyplot as plt
 import seaborn as sns
+import joblib
 
 df = pd.read_csv("IRIS.csv")
 
@@ -73,5 +74,11 @@ plt.title("decision tree pada data bunga iris IRIS.csv")
 plt.show()
 
 
+
+# export model & scaler
+joblib.dump(clf, "iris_model.pkl")
+joblib.dump(scaler, "scaler.pkl")
+joblib.dump(le, "label_encoder.pkl")
+print("Model, scaler, dan encoder berhasil disimpan.")
 
 
