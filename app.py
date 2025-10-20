@@ -2,8 +2,7 @@ from flask import Flask, render_template, request
 import joblib
 import numpy as np
 
-model = joblib.load("iris_model.pkl")
-scaler = joblib.load("scaler.pkl")
+model = joblib.load("iris_model_nb.pkl")
 le = joblib.load("label_encoder.pkl")
 
 app = Flask(__name__, template_folder="pages")
@@ -24,11 +23,8 @@ def predict():
         # Buat array untuk model
         sample = np.array([[sepal_length, sepal_width, petal_length, petal_width]])
 
-        # Scale data
-        sample_scaled = scaler.transform(sample)
-
         # Prediksi
-        pred = model.predict(sample_scaled)
+        pred = model.predict(sample)
         species = le.inverse_transform(pred)[0]
 
         return render_template("index.html", prediction_text=f"Prediksi: {species}")
