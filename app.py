@@ -2,35 +2,40 @@ from flask import Flask, render_template, request
 import joblib
 import numpy as np
 
-model = joblib.load("iris_model_nb.pkl")
-le = joblib.load("label_encoder.pkl")
+# Load model dan label encoder
+model = joblib.load("badminton_model_cnb.pkl")
+le_target = joblib.load("label_encoder_target.pkl")
+le_features = joblib.load("label_encoder_features.pkl")  # dict semua fitur
 
 app = Flask(__name__, template_folder="pages")
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    # Ambil pilihan fitur dari label encoder untuk dropdown
+    options = {col: le.classes_ for col, le in le_features.items()}
+    return render_template("index.html", options=options)
 
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-        # Ambil data dari form
-        sepal_length = float(request.form["sepal_length"])
-        sepal_width = float(request.form["sepal_width"])
-        petal_length = float(request.form["petal_length"])
-        petal_width = float(request.form["petal_width"])
+        # Ambil data dari form dan encode sesuai label encoder
+        sample = []
+        for col in le_features.keys():
+            val = request.form[col]
+            encoded = le_features[col].transform([val])[0]
+            sample.append(encoded)
 
-        # Buat array untuk model
-        sample = np.array([[sepal_length, sepal_width, petal_length, petal_width]])
-
-        # Prediksi
+        sample = np.array([sample])
         pred = model.predict(sample)
-        species = le.inverse_transform(pred)[0]
+        result = le_target.inverse_transform(pred)[0]
 
-        return render_template("index.html", prediction_text=f"Prediksi: {species}")
+        # Tampilkan hasil
+        options = {col: le.classes_ for col, le in le_features.items()}
+        return render_template("index.html", options=options, prediction_text=f"Prediksi: {result}")
 
     except Exception as e:
-        return render_template("index.html", prediction_text=f"Error: {str(e)}")
+        options = {col: le.classes_ for col, le in le_features.items()}
+        return render_template("index.html", options=options, prediction_text=f"Error: {str(e)}")
 
 if __name__ == "__main__":
     app.run(debug=True)

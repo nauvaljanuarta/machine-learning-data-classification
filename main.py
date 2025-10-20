@@ -1,24 +1,28 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.preprocessing import LabelEncoder
+from sklearn.naive_bayes import CategoricalNB
+from sklearn.metrics import accuracy_score, classification_report
 from yellowbrick.classifier import ConfusionMatrix
 import joblib
 
-# Load data
-df = pd.read_csv("IRIS.csv")
+df = pd.read_csv("badminton_dataset.csv")
 
-# Encode label
-le = LabelEncoder()
-df['species'] = le.fit_transform(df['species'])
+# Encode target
+le_target = LabelEncoder()
+df['Play_Badminton'] = le_target.fit_transform(df['Play_Badminton'])
+print("\nMapping kelas target:", dict(zip(le_target.classes_, le_target.transform(le_target.classes_))))
+
+le_features = {}
+for col in df.columns.drop('Play_Badminton'):
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col])
+    le_features[col] = le
+    print(f"Mapping fitur {col}: {dict(zip(le.classes_, le.transform(le.classes_)))}")
 
 # Split fitur (X) dan target (y)
-X = df.drop('species', axis=1)
-y = df['species']
-
-print("\nMapping kelas:", dict(zip(le.classes_, le.transform(le.classes_))))
-
+X = df.drop('Play_Badminton', axis=1)
+y = df['Play_Badminton']
 
 # Train test split
 X_train, X_test, y_train, y_test = train_test_split(
@@ -26,28 +30,24 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 print(f"\nUkuran data -> Train: {len(X_train)}, Test: {len(X_test)}")
+print('X_test:\n', X_test)
+print('y_test:\n', y_test)
 
-print('ini adalah x test :', "\n", X_test)
-print('ini adalah y test :',  "\n", y_test)
-
-# pakai gaussian karena data iris sederhana dan kecil
-model = GaussianNB()
+model = CategoricalNB()
 model.fit(X_train, y_train)
 
-# prediksi
 y_pred = model.predict(X_test)
 
-# hasil analisis
 acc = round(accuracy_score(y_test, y_pred) * 100, 2)
-print("Akurasi:", acc, "%")
+print("\nAkurasi:", acc, "%")
 
 print("\nClassification Report:")
-print(classification_report(y_test, y_pred, target_names=le.classes_))
+print(classification_report(y_test, y_pred, target_names=le_target.classes_))
 
-print("Confusion Matrix:")
-cm_viz = ConfusionMatrix(model, classes=y.unique())
+cm_viz = ConfusionMatrix(model, classes=le_target.classes_)
 cm_viz.score(X_test, y_test)
 cm_viz.show()
 
-joblib.dump(model, "iris_model_nb.pkl")
-joblib.dump(le, "label_encoder.pkl")
+joblib.dump(model, "badminton_model_cnb.pkl")
+joblib.dump(le_target, "label_encoder_target.pkl")
+joblib.dump(le_features, "label_encoder_features.pkl")
