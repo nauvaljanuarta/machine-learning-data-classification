@@ -3,42 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prediksi Badminton</title>
+  <title>Prediksi Loan Approval</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="bg-gray-100 py-6">
 
-<div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
-  <h1 class="text-2xl font-bold text-center text-blue-600 mb-4">
-    Prediksi Bermain Badminton
-  </h1>
+<div class="container mx-auto px-4">
+  <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">Prediksi Loan Approval dengan SVM</h1>
 
-  <form action="/predict" method="post" class="space-y-4">
-    {% for feature, choices in options.items() %}
-    <div>
-      <label class="block text-gray-700 font-semibold">{{ feature }}:</label>
-      <select name="{{ feature }}" class="w-full px-3 py-2 border rounded-md focus:ring focus:ring-blue-300" required>
-        <option value="" disabled selected>Pilih {{ feature }}</option>
-        {% for choice in choices %}
-          <option value="{{ choice }}">{{ choice }}</option>
-        {% endfor %}
-      </select>
+  <!-- Evaluasi semua kernel -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    {% for kernel in kernels %}
+    <div class="bg-white p-4 rounded-xl shadow">
+      <h2 class="text-xl font-semibold text-center mb-2">{{ kernel.capitalize() }} Kernel</h2>
+      <img src="{{ images[kernel] }}" alt="CM {{ kernel }}" class="mx-auto mb-2 border rounded-md">
+      <p class="text-center font-semibold">Akurasi: {{ eval_results[kernel]['accuracy'] }}%</p>
     </div>
     {% endfor %}
-
-    <button type="submit"
-            class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition">
-      Prediksi
-    </button>
-  </form>
-
-  {% if prediction_text %}
-  <div class="mt-6 text-center">
-    <h2 class="text-lg font-semibold text-gray-800">
-      {{ prediction_text }}
-    </h2>
   </div>
-  {% endif %}
+
+  <!-- Form input user -->
+  <div class="bg-white shadow-lg rounded-xl p-6 max-w-3xl mx-auto">
+    <form action="/" method="post" class="space-y-4">
+      <div>
+        <label class="block font-semibold text-gray-700">Pilih Kernel:</label>
+        <select name="kernel" class="w-full border px-3 py-2 rounded-md" required>
+          {% for k in kernels %}
+            <option value="{{ k }}" {% if selected_kernel==k %}selected{% endif %}>{{ k.capitalize() }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {% for col in cat_features %}
+      <div>
+        <label class="block font-semibold text-gray-700">{{ col.replace("_"," ").capitalize() }}</label>
+        <select name="{{ col }}" class="w-full border px-3 py-2 rounded-md" required>
+          <option value="" disabled selected>Pilih {{ col }}</option>
+          {% for val in le_features[col].classes_ %}
+            <option value="{{ val }}">{{ val }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endfor %}
+
+      {% for col in num_features %}
+      <div>
+        <label class="block font-semibold text-gray-700">{{ col.replace("_"," ").capitalize() }}</label>
+        <input type="number" name="{{ col }}" step="any" class="w-full border px-3 py-2 rounded-md" required>
+      </div>
+      {% endfor %}
+
+      <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition">
+        Prediksi
+      </button>
+    </form>
+
+    <!-- Hasil prediksi -->
+    {% if user_prediction %}
+    <div class="mt-4 p-4 bg-green-100 text-green-800 rounded-md text-center">
+      <h2 class="text-lg font-semibold">Prediksi Status Loan:</h2>
+      <p class="text-xl font-bold">{{ user_prediction }}</p>
+    </div>
+    {% endif %}
+  </div>
 </div>
 
 </body>
